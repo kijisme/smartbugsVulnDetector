@@ -1,11 +1,15 @@
-import React from 'react'
+// src/App.js
+import React from 'react';
+import ButtonComponent from './components/ButtonComponent';
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <h1>This is React App.</h1>
+    <div>
+      <h1>React FastAPI App</h1>
+      <ButtonComponent />
     </div>
-  )
-}
+  );
+};
 
-export default App
+export default App;
+
