@@ -26,3 +26,19 @@ mongod --dbpath /var/lib/mongo --logpath /var/log/mongodb/mongod.log --fork
 ```
 mongod --dbpath /var/lib/mongo --logpath /var/log/mongodb/mongod.log --shutdown
 ```
+
+数据库操作
+```
+show dbs 查看全部数据库
+use DATABASE_NAME 使用/新建数据库
+
+```
+```
+集合操作
+db.createCollection("NAME") 新建集合
+```
+用户操作
+```
+show users 查看全部角色
+
+```
