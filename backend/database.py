@@ -9,6 +9,10 @@ class baseProcess(object):
         self.client = AsyncIOMotorClient(self.CONNECT_STRING)
         # 获得数据库
         self.database = self.client.smartbugsVulnDetector
+    def helper(self, document)-> dict:
+
+        return {k: str(document[k]) if k == '_id' else document[k] for k in document}
+
 
 # userinfo
 class userInfoProcess(baseProcess):
@@ -16,19 +20,20 @@ class userInfoProcess(baseProcess):
         super().__init__()
         self.collection = self.database.userInfo
 
-    async def add(self, info):
-        document = info
-        result = await self.collection.insert_one(document)
-        return document
+    async def add(self, info:dict) -> dict:
+        insertRe = await self.collection.insert_one(info)
+        document = await self.collection.find_one({"_id": insertRe.inserted_id})
+        return self.helper(document)
 
-    async def find(self, _id):
-        document = await self.collection.find_one({'id':_id})
-        return document
+    async def find(self, _id:str) -> dict:
+        document = await self.collection.find_one({'id':ObjectId(_id)})
+        if document:
+        return self.helper(document)
     
-    async def update(self, _id, updateInfo):
-        await self.collection.update_one({'_id':_id}, {'$set': updateInfo})
-        document = await self.collection.find_one({'_id':_id})
-        return document
+    # async def update(self, _id, updateInfo):
+    #     await self.collection.update_one({'_id':_id}, {'$set': updateInfo})
+    #     document = await self.collection.find_one({'_id':_id})
+    #     return document
 
 # fileInfo
 class fileInfoProcess(baseProcess):
