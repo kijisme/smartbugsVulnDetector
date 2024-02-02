@@ -1,7 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi.encoders import jsonable_encoder
+from fastapi import FastAPI, HTTPException, APIRouter, Body
 from fastapi.middleware.cors import CORSMiddleware
 
-from model import userInfo, fileInfo, resultInfo, uploadInfo
+from model import userInfo, fileInfo, resultInfo, uploadInfo, ResponseModel
 from database import userInfoProcess, fileInfoProcess, resultInfoProcess, uploadInfoProcess
 
 # 初始化app
@@ -30,26 +31,22 @@ async def read_root():
     return {"message": "智能合约漏洞监测系统"}
 
 
-@app.post("/register", tags=["注册接口"], response_model=userInfo)
-async def register(userinfo:userInfo):
-
-    response = await userinfoProcess.add(userinfo.dict())
-    print(type(response['_id']))
-    if response:
-        return response
-    raise HTTPException(404, "register error")
+@app.post("/register", tags=["注册接口"])
+async def register(userinfo:userInfo = Body(...)):
+    userinfo = jsonable_encoder(userinfo)
+    response = await userinfoProcess.add(userinfo)
+    return ResponseModel(response, "注册成功")
 
 @app.post("/login", tags=["登录接口"])
-async def login(_id:str, username:str, password:str):
+async def login(_id, username, password):
 
     response = await userinfoProcess.find(_id)
     if response:
-        # if response['username'] == username:
-        #     return 0
-        # if response['password'] == password:
-        #     return 1
-        return response
-    raise HTTPException(404, "register error")
+        if response['password'] != password:
+            return ResponseModel('[]', "密码或账户名称错误")
+        return ResponseModel(response, "登录成功")
+    return ErrorResponseModel("出错了.", 404, "不存在该用户id")
+
 
 # @app.get("/api/UserInfo{username}", response_model=UserInfo)
 # async def get_todo_by_id(username):
