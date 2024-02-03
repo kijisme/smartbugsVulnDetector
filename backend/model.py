@@ -30,11 +30,6 @@ class tokenInfo(BaseModel):
     token_type: str
 
 
-# 检测
-class detectInfo(BaseModel):
-    fileId : str = Field(..., description="The id of the file")
-    contentType : str  = Field(..., description="The content_type of the file")
-
 # class fileInfo(BaseModel):
 #     # fileId
 #     filename : str = Field(..., description="The filename of the file")

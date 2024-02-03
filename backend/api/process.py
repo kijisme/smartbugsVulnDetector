@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, Body
-from model import  ErrorResponseModel, detectInfo
+from fastapi import APIRouter
+from model import  ErrorResponseModel
 from database import fileInfoProcess, resultInfoProcess
 from bson.objectid import ObjectId
 # 初始化路由
@@ -9,15 +9,16 @@ fileinfoProcess = fileInfoProcess()
 resultinfoProcess = resultInfoProcess()
 
 @router.post("/detect", tags=["漏洞检测"])
-async def detect(info: detectInfo = Depends()):
+async def detect(fileId:str):
     # 获取文件信息
-    fileinfo = await fileinfoProcess.find({'content_type':info.contentType})
+    fileinfo = await fileinfoProcess.find({'_id': ObjectId(fileId)})
     if fileinfo:
         graph = fileinfo['graph']
+        print(graph)
         # 检测
         re = fileinfo['graph'] #detector(graph)
         re_dict = {
-            'fileId':info.fileId,
+            'fileId':ObjectId(fileId),
             'result':re,
         }
         reInfo = await resultinfoProcess.add(re_dict)

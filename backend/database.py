@@ -3,7 +3,6 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from model import userInfo
 
-
 class baseProcess(object):
     def __init__(self):
         self.CONNECT_STRING = 'mongodb://webAppUser:webAppPassword@localhost/smartbugsVulnDetector'
@@ -13,7 +12,7 @@ class baseProcess(object):
         self.database = self.client.smartbugsVulnDetector
     def helper(self, document)-> dict:
 
-        return {k: str(document[k]) if k == '_id' else document[k] for k in document}
+        return {k: str(document[k]) if isinstance(document[k], ObjectId) else document[k] for k in document}
 
 
 # userinfo
@@ -77,14 +76,16 @@ class resultInfoProcess(baseProcess):
         super().__init__()
         self.collection = self.database.resultInfo
 
-    async def add(self, info):
-        document = info
-        result = await self.collection.insert_one(document)
-        return document
+    async def add(self, info:dict) -> dict:
+        insertRe = await self.collection.insert_one(info)
+        document = await self.collection.find_one({"_id": insertRe.inserted_id})
+        return self.helper(document)
 
-    async def find(self, _id):
-        document = await self.collection.find_one({'_id':_id})
-        return document
+    async def find(self, info:dict) -> dict:
+        document = await self.collection.find_one(info)
+        print(self.helper(document))
+        if document:
+            return self.helper(document)
     
     async def delete(self, _id):
         await self.collection.delete_one({'_id':u_idername})
