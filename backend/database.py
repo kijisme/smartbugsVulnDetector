@@ -1,6 +1,8 @@
-from motor.motor_asyncio import AsyncIOMotorClient
-from model import userInfo, fileInfo, resultInfo, uploadInfo
 from bson.objectid import ObjectId
+from motor.motor_asyncio import AsyncIOMotorClient
+
+from model import userInfo
+
 
 class baseProcess(object):
     def __init__(self):
@@ -25,15 +27,11 @@ class userInfoProcess(baseProcess):
         document = await self.collection.find_one({"_id": insertRe.inserted_id})
         return self.helper(document)
 
-    async def find(self, _id:str) -> dict:
-        document = await self.collection.find_one({'id':ObjectId(_id)})
+    async def find(self, info:dict) -> dict:
+        document = await self.collection.find_one(info)
+
         if document:
-        return self.helper(document)
-    
-    # async def update(self, _id, updateInfo):
-    #     await self.collection.update_one({'_id':_id}, {'$set': updateInfo})
-    #     document = await self.collection.find_one({'_id':_id})
-    #     return document
+            return self.helper(document)
 
 # fileInfo
 class fileInfoProcess(baseProcess):
@@ -41,16 +39,33 @@ class fileInfoProcess(baseProcess):
         super().__init__()
         self.collection = self.database.fileInfo
 
-    async def add(self, info):
-        document = info
-        result = await self.collection.insert_one(document)
-        return document
+    async def add(self, info:dict) -> dict:
+        insertRe = await self.collection.insert_one(info)
+        document = await self.collection.find_one({"_id": insertRe.inserted_id})
+        return self.helper(document)
 
-    async def find(self, _id):
-        _id = ObjectId(_id)
-        print(_id)
-        document = await self.collection.find_one({'_id':_id})
-        return document
+    async def find(self, info:dict) -> dict:
+        document = await self.collection.find_one(info)
+
+        if document:
+            return self.helper(document)
+
+# uploadInfo
+class uploadInfoProcess(baseProcess):
+    def __init__(self):
+        super().__init__()
+        self.collection = self.database.uploadInfo
+
+    async def add(self, info:dict) -> dict:
+        insertRe = await self.collection.insert_one(info)
+        document = await self.collection.find_one({"_id": insertRe.inserted_id})
+        return self.helper(document)
+
+    async def find(self, info:dict) -> dict:
+        document = await self.collection.find_one(info)
+        print(self.helper(document))
+        if document:
+            return self.helper(document)
     
     async def delete(self, _id):
         await self.collection.delete_one({'_id':u_idername})
@@ -75,30 +90,13 @@ class resultInfoProcess(baseProcess):
         await self.collection.delete_one({'_id':u_idername})
         return True
 
-# uploadInfo
-class uploadInfoProcess(baseProcess):
-    def __init__(self):
-        super().__init__()
-        self.collection = self.database.uploadInfo
-
-    async def add(self, info):
-        document = info
-        result = await self.collection.insert_one(document)
-        return document
-
-    async def find(self, _id):
-        document = await self.collection.find_one({'_id':_id})
-        return document
-    
-    async def delete(self, _id):
-        await self.collection.delete_one({'_id':u_idername})
-        return True
 
 
-# # 查询
-# async def fetch_one_user_info(username):
-#     document = await collection.find_one({'username':username})
-#     return document
+
+# # # 查询
+# # async def fetch_one_user_info(username):
+# #     document = await collection.find_one({'username':username})
+# #     return document
 
 # # 添加
 # async def create_user_info(user_info):

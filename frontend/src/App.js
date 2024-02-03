@@ -1,24 +1,22 @@
 import React, { useState } from 'react';
-import Modal from './compoments/Modal';
+import { Button} from 'antd';
+
+import Motal from './compoments/Motal'
 
 const App = () => {
-  const [isModalOpen, setModalOpen] = useState(false);
 
-  const openModal = () => {
-    setModalOpen(true);
-  };
+  const [isPopupOpen, setPopupOpen] = useState(false);
 
-  const closeModal = () => {
-    setModalOpen(false);
+  // 点击事件处理程序，用于切换弹窗的显示状态
+  const handleButtonClick = () => {
+    setPopupOpen(true);
   };
 
   return (
-    <div>
-      <button onClick={openModal}>Open Modal</button>
-
-      <Modal isOpen={isModalOpen} onClose={closeModal} />
-    </div>
+      <div>
+          <Button type="primary" onClick={handleButtonClick}>点我：登录/注册</Button>
+          {isPopupOpen && (<Motal/>)}
+      </div>
   );
 };
-
 export default App;
