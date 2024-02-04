@@ -1,7 +1,7 @@
 from bson.objectid import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
-
-from model import userInfo
+from datetime import datetime, timedelta
+from fastapi import HTTPException
 
 class baseProcess(object):
     def __init__(self):
@@ -11,7 +11,6 @@ class baseProcess(object):
         # 获得数据库
         self.database = self.client.smartbugsVulnDetector
     def helper(self, document)-> dict:
-
         return {k: str(document[k]) if isinstance(document[k], ObjectId) else document[k] for k in document}
 
 
@@ -28,10 +27,9 @@ class userInfoProcess(baseProcess):
 
     async def find(self, info:dict) -> dict:
         document = await self.collection.find_one(info)
-
         if document:
             return self.helper(document)
-
+    
 # fileInfo
 class fileInfoProcess(baseProcess):
     def __init__(self):
@@ -42,12 +40,13 @@ class fileInfoProcess(baseProcess):
         insertRe = await self.collection.insert_one(info)
         document = await self.collection.find_one({"_id": insertRe.inserted_id})
         return self.helper(document)
-
+    
     async def find(self, info:dict) -> dict:
         document = await self.collection.find_one(info)
-
         if document:
             return self.helper(document)
+        raise HTTPException(status_code=404, detail="find error")
+
 
 # uploadInfo
 class uploadInfoProcess(baseProcess):
@@ -62,14 +61,25 @@ class uploadInfoProcess(baseProcess):
 
     async def find(self, info:dict) -> dict:
         document = await self.collection.find_one(info)
-        print(self.helper(document))
         if document:
             return self.helper(document)
+        raise HTTPException(status_code=404, detail="find error")
     
-    async def delete(self, _id):
-        await self.collection.delete_one({'_id':u_idername})
-        return True
+    async def update(self, filter:dict, info:dict) -> dict:
+        # 查询是否满足唯一
+        if '_id' in filter or await self.collection.count_documents(filter) == 1:
+            updateRe = await self.collection.update_one(filter, {"$set": info}, upsert=True)
+            # document = await self.collection.find_one({"_id": updateRe.upserted_id})
+            return updateRe.raw_result
+        raise HTTPException(status_code=404, detail="update error")    
+    
+    async def find_all(self, filter:dict) -> dict:
+        document = await self.collection.find(filter)
+        if document:
+            return self.helper(document)
+        raise HTTPException(status_code=404, detail="find error")
 
+    
 # resultInfo
 class resultInfoProcess(baseProcess):
     def __init__(self):
@@ -86,10 +96,8 @@ class resultInfoProcess(baseProcess):
         print(self.helper(document))
         if document:
             return self.helper(document)
+        raise HTTPException(status_code=404, detail="find error")
     
-    async def delete(self, _id):
-        await self.collection.delete_one({'_id':u_idername})
-        return True
 
 
 

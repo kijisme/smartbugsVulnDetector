@@ -5,7 +5,7 @@ from api import user, upload, process
 
 # 初始化app
 app = FastAPI()
-app.include_router(user.router, prefix='/user')
+app.include_router(user.router)
 app.include_router(upload.router, prefix='/upload')
 app.include_router(process.router, prefix='/process')
 origins = [
@@ -24,3 +24,4 @@ app.add_middleware(
 @app.get("/", tags=["向导页面"])
 async def read_root():
     return {"message": "智能合约漏洞监测系统"}
+

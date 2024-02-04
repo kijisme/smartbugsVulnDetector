@@ -25,6 +25,8 @@ python-multipart = "*"
 requests = "*"
 networkx = "==2.8.0"
 slither-analyzer = "*"
+torch = "*"
+numpy = "*"
 
 [dev-packages]
 

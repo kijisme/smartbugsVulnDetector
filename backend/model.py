@@ -1,22 +1,11 @@
-from typing import Optional
-from bson.objectid import ObjectId
-from pydantic import BaseModel, SecretStr, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field
 
-def ResponseModel(data, message):
+def ResponseModel(data, success, message):
     return {
         "data": [data],
-        "code": 200,
+        "success": success,
         "message": message,
     }
-
-def ErrorResponseModel(error, code, message):
-    return {"error": error, "code": code, "message": message}
-
-# 登录
-class userAuth(BaseModel):
-    id : str = Field(..., description="The id of the user")
-    username : str = Field(..., description="The username of the user")
-    password : str = Field(..., description="The password of the user")
 
 # 注册
 class userInfo(BaseModel):
@@ -24,25 +13,10 @@ class userInfo(BaseModel):
     password : str = Field(..., description="The password of the user")
     email : EmailStr = Field(..., description="The email of the user")
 
-# 验证
-class tokenInfo(BaseModel):
-    access_token: str
-    token_type: str
+# 登录
+class userAuth(BaseModel):
+    id : str = Field(..., description="The id of the user")
+    password : str = Field(..., description="The password of the user")
 
-
-# class fileInfo(BaseModel):
-#     # fileId
-#     filename : str = Field(..., description="The filename of the file")
-#     size : int = Field(..., description="The size of the file")
-#     content : str
-#     processGraph : str
-
-# class resultInfo(BaseModel):
-#     # resultId
-#     fileId: str
-#     content : str
-
-# class uploadInfo(BaseModel):
-#     # uploadId
-#     fileId: str
-#     userId: str
+class detectInfo(BaseModel):
+    fileId : str = Field(..., description="The id of the file")
