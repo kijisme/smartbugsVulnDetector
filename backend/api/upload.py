@@ -3,10 +3,10 @@ import subprocess
 import networkx as nx
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from bson.objectid import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from model import  ResponseModel
-from database import fileInfoProcess, uploadInfoProcess
+from api.common import fileinfoProcess, uploadinfoProcess
 
 from graph.cfg import generate_cfg_graph
 from graph.cg import generate_cg_graph
@@ -17,9 +17,6 @@ from dep import get_current_user
 
 # 初始化路由
 router = APIRouter()
-# 初始化数据库驱动
-fileinfoProcess = fileInfoProcess()
-uploadinfoProcess = uploadInfoProcess()
 
 TMP_PATH = '/workspaces/smartbugsVulnDetector/tmp'
 
@@ -39,7 +36,7 @@ async def upload(userinfo: dict = Depends(get_current_user), file: UploadFile = 
     # 上传upload数据库
     await uploadinfoProcess.add(upload_dict)
 
-    return ResponseModel(fileinfo, True,'处理完成')
+    return ResponseModel(fileinfo, True,'/upload/upload')
 
 async def processFile(file: UploadFile = File(...)) -> dict:
     # 暂存文件
@@ -49,6 +46,7 @@ async def processFile(file: UploadFile = File(...)) -> dict:
     file_path = os.path.join(TMP_PATH, 'tmp.sol')
     with open(file_path, "w") as f:
         f.write(content)
+    # 设置版本
     version = get_solc_version(file_path)
     command = f"solc-select install {version}"
     subprocess.run(command, shell=True)
@@ -79,7 +77,22 @@ async def processFile(file: UploadFile = File(...)) -> dict:
     
 
         
-@router.post("/history", tags=["登录接口"])
-async def history(userinfo: dict = Depends(get_current_user)) -> dict:
+@router.post("/history", tags=["历史上传记录"])
+async def history(userinfo: dict = Depends(get_current_user)) -> ResponseModel:
     userId = userinfo['_id']
-    response = await uploadinfoProcess.find_all({'userId':ObjectId(userId)})
+
+    today = datetime.utcnow()
+    start_of_day = today.replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday = start_of_day - timedelta(days=1)
+    previous7 = start_of_day - timedelta(days=7)
+
+    # 大于等于 小于
+    condition_today = {"$gte": start_of_day, "$lt": today}
+    condition_yesterday = {"$gte": yesterday, "$lt": today}
+    condition_previous7 = {"$gte": previous7, "$lt": yesterday}
+
+    response_today = await uploadinfoProcess.find_all({'userId':ObjectId(userId), 'upload_time':condition_today})
+    response_yesterday = await uploadinfoProcess.find_all({'userId':ObjectId(userId), 'upload_time':condition_yesterday})
+    response_previous7 = await uploadinfoProcess.find_all({'userId':ObjectId(userId), 'upload_time':condition_previous7})
+
+    return ResponseModel({'today':response_today, 'yesterday':response_yesterday, 'previous':response_previous7}, True, 'upload/history')

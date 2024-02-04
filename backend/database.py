@@ -1,7 +1,5 @@
 from bson.objectid import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient
-from datetime import datetime, timedelta
-from fastapi import HTTPException
 
 class baseProcess(object):
     def __init__(self):
@@ -41,12 +39,10 @@ class fileInfoProcess(baseProcess):
         document = await self.collection.find_one({"_id": insertRe.inserted_id})
         return self.helper(document)
     
-    async def find(self, info:dict) -> dict:
+    async def find(self, info:dict):
         document = await self.collection.find_one(info)
         if document:
             return self.helper(document)
-        raise HTTPException(status_code=404, detail="find error")
-
 
 # uploadInfo
 class uploadInfoProcess(baseProcess):
@@ -59,26 +55,25 @@ class uploadInfoProcess(baseProcess):
         document = await self.collection.find_one({"_id": insertRe.inserted_id})
         return self.helper(document)
 
-    async def find(self, info:dict) -> dict:
+    async def find(self, info:dict):
         document = await self.collection.find_one(info)
         if document:
             return self.helper(document)
-        raise HTTPException(status_code=404, detail="find error")
     
     async def update(self, filter:dict, info:dict) -> dict:
         # 查询是否满足唯一
         if '_id' in filter or await self.collection.count_documents(filter) == 1:
             updateRe = await self.collection.update_one(filter, {"$set": info}, upsert=True)
             # document = await self.collection.find_one({"_id": updateRe.upserted_id})
-            return updateRe.raw_result
-        raise HTTPException(status_code=404, detail="update error")    
+            return updateRe.raw_result  
     
     async def find_all(self, filter:dict) -> dict:
-        document = await self.collection.find(filter)
-        if document:
-            return self.helper(document)
-        raise HTTPException(status_code=404, detail="find error")
-
+        documents =  self.collection.find(filter)
+        if documents:
+            documents_list = [] 
+            async for document in documents:
+                documents_list.append(self.helper(document))
+            return documents_list
     
 # resultInfo
 class resultInfoProcess(baseProcess):
@@ -93,33 +88,6 @@ class resultInfoProcess(baseProcess):
 
     async def find(self, info:dict) -> dict:
         document = await self.collection.find_one(info)
-        print(self.helper(document))
         if document:
             return self.helper(document)
-        raise HTTPException(status_code=404, detail="find error")
     
-
-
-
-
-# # # 查询
-# # async def fetch_one_user_info(username):
-# #     document = await collection.find_one({'username':username})
-# #     return document
-
-# # 添加
-# async def create_user_info(user_info):
-#     document = user_info
-#     result = await collection.insert_one(document)
-#     return document
-
-# # 更新
-# async def update_user_info(username, userInfo):
-#     await collection.update_one({'username':username}, {'$set': userInfo})
-#     document = await collection.find_one({'username':username})
-#     return document
-
-# # 删除
-# async def delete_user_info(username):
-#     await collection.delete_one({'username':username})
-#     return True
