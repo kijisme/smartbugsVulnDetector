@@ -1,17 +1,3 @@
-初始化项目
-```
-npm init vite@latest
-```
-安装插件
-```
-npm i react-router-dom axios nprogress antd @ant-design/icons
-```
-
-启动项目
-```
-npm run dev
-```
-
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.

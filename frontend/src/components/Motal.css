@@ -1,0 +1,8 @@
+#Motal .ant-layout-content div{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100%;
+    background-color: rgb(219, 238, 251);
+}

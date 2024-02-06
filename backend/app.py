@@ -9,8 +9,8 @@ app.include_router(user.router)
 app.include_router(upload.router, prefix='/upload')
 app.include_router(process.router, prefix='/process')
 origins = [
-    "http://localhost:3000",
-    "localhost:3000"
+    "http://localhost:5173",
+    "localhost:5173"
 ]
 
 app.add_middleware(
